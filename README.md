@@ -104,9 +104,7 @@ This will provision:
 
 ## 🧭 Roadmap
 
-- Add **Transit Gateway interconnects**  
-- Add **multi-account support** via AWS Organizations  
-- Extend lab with **DNS/DTC use cases** using Infoblox UDDI  
+- In progress 
 
 ---
 
