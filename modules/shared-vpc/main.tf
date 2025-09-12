@@ -1,7 +1,9 @@
 locals {
-  infoblox_ami_id = "ami-065fe8d4cde1bb094"
+  infoblox_ami_id = "ami-08659b5070b66249d"
   join_token       = var.infoblox_join_token
 }
+
+data "aws_availability_zones" "available" {}
 
 # Shared Services VPC
 resource "aws_vpc" "shared" {
@@ -15,7 +17,7 @@ resource "aws_vpc" "shared" {
 resource "aws_subnet" "public" {
   vpc_id                  = aws_vpc.shared.id
   cidr_block              = "10.30.1.0/24"
-  availability_zone       = "eu-west-1a"
+  availability_zone       = data.aws_availability_zones.available.names[0]
   map_public_ip_on_launch = true
   tags                    = merge(var.tags, { Name = "shared-subnet" })
 }
