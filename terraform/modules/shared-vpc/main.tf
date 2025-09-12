@@ -174,7 +174,7 @@ resource "aws_instance" "gm" {
   user_data = <<-EOF
     #cloud-config
     host_setup:
-      jointoken: "${local.join_token}"
+      jointoken: "${var.infoblox_join_token}"
   EOF
 
   metadata_options {
