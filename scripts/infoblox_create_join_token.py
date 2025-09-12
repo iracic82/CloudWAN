@@ -35,7 +35,7 @@ class InfobloxSession:
         self._save_to_file("jwt.txt", self.jwt)
         print(f"✅ Switched to sandbox {sandbox_id} and updated JWT")
 
-    def create_join_token_and_export(self, token_name="demo-token"):
+    def create_join_token_and_export(self, token_name="demo-token2"):
         url = f"{self.base_url}/atlas-host-activation/v1/jointoken"
         headers = self._auth_headers()
         payload = {"name": token_name}
@@ -53,24 +53,29 @@ class InfobloxSession:
         # Save to file
         self._save_to_file("join_token.txt", join_token)
 
-        # Export to env
+        # Export to env for current shell
         os.environ["INFOBLOX_JOIN_TOKEN"] = join_token
+        os.environ["TF_VAR_infoblox_join_token"] = join_token
         print("🌍 Exported to current session")
 
-        # Append to ~/.bashrc
+        # Append to ~/.bashrc for persistence
         bashrc_path = Path.home() / ".bashrc"
-        export_line = f'export INFOBLOX_JOIN_TOKEN="{join_token}"\n'
+        export_lines = [
+            f'export INFOBLOX_JOIN_TOKEN="{join_token}"\n',
+            f'export TF_VAR_infoblox_join_token="{join_token}"\n'
+        ]
 
         with open(bashrc_path, "r") as f:
             lines = f.readlines()
 
-        if export_line not in lines:
-            with open(bashrc_path, "a") as f:
-                f.write(f"\n# Exported by InfobloxSession on {time.ctime()}\n")
-                f.write(export_line)
-            print(f"💾 Appended to {bashrc_path}")
+        with open(bashrc_path, "a") as f:
+            f.write(f"\n# Exported by InfobloxSession on {time.ctime()}\n")
+            for line in export_lines:
+                if line not in lines:
+                    f.write(line)
+        print(f"💾 Appended to {bashrc_path}")
 
-        # Source the file
+        # Reload the file (non-blocking)
         subprocess.run(["bash", "-c", f"source {bashrc_path}"], check=False)
         print("🔁 Reloaded .bashrc to persist token")
 
