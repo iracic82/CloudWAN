@@ -136,6 +136,6 @@ resource "aws_instance" "gm" {
     instance_metadata_tags      = "enabled"
   }
 
-  tags      = merge(var.tags, { Name = "Infoblox-GM" })
+  tags      = merge(var.tags, { Name = "Infoblox-NIOSX" })
   depends_on = [aws_internet_gateway.gw]
 }
