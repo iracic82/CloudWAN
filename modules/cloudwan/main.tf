@@ -21,7 +21,7 @@ resource "aws_networkmanager_core_network" "core" {
 
   # seeds an initial LIVE policy so attachments won't fail with "live policy not found"
   create_base_policy  = true
-  base_policy_regions = ["eu-west-1", "us-east-1"]
+  base_policy_regions = ["eu-central-1", "us-east-1"]
 
   tags = var.tags
 }
@@ -45,8 +45,8 @@ resource "aws_networkmanager_core_network_policy_attachment" "policy" {
       "inside-cidr-blocks": ["10.30.1.0/24", "10.60.0.0/16"]
       "edge-locations" = [
         {
-          "location": "eu-west-1",
-          "asn": 64513,
+          "location": "eu-central-1",
+          "asn": 64514,
           "inside-cidr-blocks": [
            "10.30.1.0/24", "10.60.1.0/24"
           ]
@@ -98,7 +98,7 @@ resource "aws_networkmanager_core_network_policy_attachment" "policy" {
         "rule-number" = 200
         description   = "Map EU spoke to vpcComm"
         conditions    = [
-          { type = "resource-id", operator = "equals", value = var.vpcs["eu_west_1"] }
+          { type = "resource-id", operator = "equals", value = var.vpcs["eu_central_1"] }
         ]
         action = {
           "association-method" = "constant"
@@ -136,7 +136,7 @@ resource "aws_networkmanager_core_network_policy_attachment" "policy" {
 resource "aws_networkmanager_vpc_attachment" "shared" {
   depends_on     = [aws_networkmanager_core_network_policy_attachment.policy]
   core_network_id = aws_networkmanager_core_network.core.id
-  vpc_arn         = "arn:aws:ec2:eu-west-1:${data.aws_caller_identity.me.account_id}:vpc/${var.vpcs["shared"]}"
+  vpc_arn         = "arn:aws:ec2:eu-central-1:${data.aws_caller_identity.me.account_id}:vpc/${var.vpcs["shared"]}"
   subnet_arns     = var.subnet_arns_map["shared"]
   tags            = var.tags
 }
@@ -144,8 +144,8 @@ resource "aws_networkmanager_vpc_attachment" "shared" {
 resource "aws_networkmanager_vpc_attachment" "eu" {
   depends_on      = [aws_networkmanager_core_network_policy_attachment.policy]
   core_network_id = aws_networkmanager_core_network.core.id
-  vpc_arn         = "arn:aws:ec2:eu-west-1:${data.aws_caller_identity.me.account_id}:vpc/${var.vpcs["eu_west_1"]}"
-  subnet_arns     = var.subnet_arns_map["eu_west_1"]
+  vpc_arn         = "arn:aws:ec2:eu-central-1:${data.aws_caller_identity.me.account_id}:vpc/${var.vpcs["eu_central_1"]}"
+  subnet_arns     = var.subnet_arns_map["eu_central_1"]
   tags            = var.tags
 }
 
@@ -162,7 +162,7 @@ resource "aws_networkmanager_connect_attachment" "shared_connect" {
   core_network_id         = aws_networkmanager_core_network.core.id
   transport_attachment_id = aws_networkmanager_vpc_attachment.shared.id
 
-  edge_location = "eu-west-1"
+  edge_location = "eu-central-1"
   options {
   protocol = "NO_ENCAP"
 }
