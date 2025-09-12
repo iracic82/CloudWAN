@@ -2,7 +2,7 @@
 module "shared_vpc" {
   providers = { aws = aws }
   source              = "./modules/shared-vpc"
-  infoblox_join_token = ""
+  infoblox_join_token = "0c40ebc559a4436410c8d00964991f5f5f94b69313ba3285d0234c0e4579f7c5"
   key_name       = var.demo_key_name
   tags                = var.tags
 }
@@ -43,54 +43,18 @@ module "cloudwan" {
     aws.us-east-1   = aws.us-east-1     # US resources
   }
   source             = "./modules/cloudwan"
-  vpcs               = {
-    shared     = module.shared_vpc.vpc_id
-    eu_west_1  = module.spoke_vpc_eu.vpc_id
-    us_east_1  = module.spoke_vpc_us.vpc_id
+  vpcs = {
+  shared       = module.shared_vpc.vpc_id
+  eu_central_1 = module.spoke_vpc_eu.vpc_id
+  us_east_1    = module.spoke_vpc_us.vpc_id
   }
+
   subnet_arns_map = {
-    shared     = module.shared_vpc.subnet_arns
-    eu_west_1  = module.spoke_vpc_eu.subnet_arns
-    us_east_1  = module.spoke_vpc_us.subnet_arns
+  shared       = module.shared_vpc.subnet_arns
+  eu_central_1 = module.spoke_vpc_eu.subnet_arns
+  us_east_1    = module.spoke_vpc_us.subnet_arns
   }
   tags = var.tags
 }
 
 
-resource "aws_route" "eu_to_us" {
-  route_table_id         = module.spoke_vpc_eu.route_table_id
-  destination_cidr_block = module.spoke_vpc_us.aws_vpc_cidr
-  core_network_arn       = module.cloudwan.core_network_arn
-}
-
-resource "aws_route" "us_to_eu" {
-  provider               = aws.us-east-1
-  route_table_id         = module.spoke_vpc_us.route_table_id
-  destination_cidr_block = module.spoke_vpc_eu.aws_vpc_cidr
-  core_network_arn       = module.cloudwan.core_network_arn
-}
-
-resource "aws_route" "eu_spoke_to_shared" {
-  route_table_id         = module.spoke_vpc_eu.route_table_id
-  destination_cidr_block = module.shared_vpc.aws_vpc_cidr
-  core_network_arn       = module.cloudwan.core_network_arn
-}
-
-resource "aws_route" "us_spoke_to_shared" {
-  provider               = aws.us-east-1
-  route_table_id         = module.spoke_vpc_us.route_table_id
-  destination_cidr_block = module.shared_vpc.aws_vpc_cidr
-  core_network_arn       = module.cloudwan.core_network_arn
-}
-
-resource "aws_route" "shared_to_spoke_eu" {
-  route_table_id         = module.shared_vpc.route_table_id
-  destination_cidr_block = module.spoke_vpc_eu.aws_vpc_cidr
-  core_network_arn       = module.cloudwan.core_network_arn
-}
-
-resource "aws_route" "shared_to_spoke_us" {
-  route_table_id         = module.shared_vpc.route_table_id
-  destination_cidr_block = module.spoke_vpc_us.aws_vpc_cidr
-  core_network_arn       = module.cloudwan.core_network_arn
-}
