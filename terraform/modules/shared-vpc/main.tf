@@ -1,6 +1,5 @@
 locals {
   infoblox_ami_id = "ami-08659b5070b66249d"
-  join_token       = var.infoblox_join_token
 }
 
 data "aws_availability_zones" "available" {}
@@ -135,7 +134,7 @@ resource "aws_instance" "niosx2" {
   user_data = <<-EOF
     #cloud-config
     host_setup:
-      jointoken: "${local.join_token}"
+      jointoken: "${var.infoblox_join_token}"
   EOF
 
   metadata_options {
