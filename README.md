@@ -110,6 +110,42 @@ This will provision:
 
 ---
 
+
+## 🔧 Optional: Route Monitor Lambda
+
+By default, AWS Cloud WAN **does not automatically propagate routes into VPC route tables**.  
+You can add a Lambda function to handle this dynamically based on **BGP peer state**.
+
+### How it Works
+- Subscribes to **CloudWAN Connect events** (`CONNECT_PEER_BGP_UP` / `DOWN`).
+- Stores peer health in a **DynamoDB table** (`CloudWANPeerState`).
+- If **any peer is UP** → ensures the route exists in the target VPC RT.
+- If **all peers are DOWN** → removes the route.
+- Publishes notifications via **SNS** (e.g. `route-monitor-alerts`).
+
+### Example Architecture
+
+CloudWAN (ConnectPeer) → EventBridge → Lambda → DynamoDB + EC2 RouteTable + SNS
+
+### Example Use Case
+In this lab:
+- VPC RT = `rtb-xxxxxxxx`  
+- Route managed = `192.168.0.0/16`  
+- Core network = `core-network-xxxxxxxx`  
+- SNS = `route-monitor-alerts`
+
+When a Connect Peer goes **UP**, the Lambda adds the route.  
+When all peers are **DOWN**, the Lambda deletes it and sends an alert.
+
+### Lambda Source Code
+The Python Lambda (with boto3) is in `/scripts/route_monitor_lambda.py`.  
+You can deploy it with:
+- IAM role (EC2 + DynamoDB + SNS permissions),
+- EventBridge rule for `NetworkManager ConnectPeer` events,
+- DynamoDB table `CloudWANPeerState`.
+
+---
+
 ## 👨‍💻 Author
 
 **Igor Racic**  
