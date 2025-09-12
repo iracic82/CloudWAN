@@ -35,18 +35,18 @@ resource "aws_internet_gateway" "igw" {
   tags   = merge(var.tags, { Name = "${var.vpc_name}-igw" })
 }
 
-resource "aws_route_table" "rt" {
-  vpc_id = aws_vpc.spoke.id
-  tags   = merge(var.tags, { Name = "${var.vpc_name}-rt" })
+# Use the VPC’s default route table so Cloud WAN propagation works
+resource "aws_default_route_table" "this" {
+  default_route_table_id = aws_vpc.spoke.default_route_table_id
+
+  tags = merge(var.tags, {
+    Name = "${var.vpc_name}-default-rt"
+  })
 }
 
-resource "aws_route_table_association" "assoc" {
-  subnet_id      = aws_subnet.subnet.id
-  route_table_id = aws_route_table.rt.id
-}
-
-resource "aws_route" "default" {
-  route_table_id         = aws_route_table.rt.id
+# Add outbound IGW route to the default RT
+resource "aws_route" "default_outbound" {
+  route_table_id         = aws_default_route_table.this.id
   destination_cidr_block = "0.0.0.0/0"
   gateway_id             = aws_internet_gateway.igw.id
 }
