@@ -35,7 +35,7 @@ class InfobloxSession:
         self._save_to_file("jwt.txt", self.jwt)
         print(f"✅ Switched to sandbox {sandbox_id} and updated JWT")
 
-    def create_join_token_and_export(self, token_name="demo-token2"):
+    def create_join_token_and_export(self, token_name="demo-token"):
         url = f"{self.base_url}/atlas-host-activation/v1/jointoken"
         headers = self._auth_headers()
         payload = {"name": token_name}
