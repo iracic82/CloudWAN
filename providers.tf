@@ -1,6 +1,6 @@
 provider "aws" {
   profile = "okta-sso"
-  region = "eu-west-1"
+  region = "eu-central-1"
 }
 
 provider "aws" {
