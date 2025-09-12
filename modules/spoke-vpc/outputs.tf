@@ -6,8 +6,10 @@ output "subnet_arns" {
   value = [aws_subnet.subnet.arn]
 }
 output "route_table_id" {
-  value = aws_route_table.rt.id
+  description = "ID of the default route table used by this VPC"
+  value       = aws_default_route_table.this.id
 }
+
 output "aws_vpc_cidr" {
   value = var.aws_vpc_cidr
 }
