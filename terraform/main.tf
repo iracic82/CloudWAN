@@ -61,6 +61,7 @@ resource "aws_route" "eu_to_us" {
   route_table_id         = module.spoke_vpc_eu.route_table_id
   destination_cidr_block = module.spoke_vpc_us.aws_vpc_cidr
   core_network_arn       = module.cloudwan.core_network_arn
+  depends_on = [module.cloudwan]
 }
 
 resource "aws_route" "us_to_eu" {
@@ -68,12 +69,14 @@ resource "aws_route" "us_to_eu" {
   route_table_id         = module.spoke_vpc_us.route_table_id
   destination_cidr_block = module.spoke_vpc_eu.aws_vpc_cidr
   core_network_arn       = module.cloudwan.core_network_arn
+  depends_on = [module.cloudwan]
 }
 
 resource "aws_route" "eu_spoke_to_shared" {
   route_table_id         = module.spoke_vpc_eu.route_table_id
   destination_cidr_block = module.shared_vpc.aws_vpc_cidr
   core_network_arn       = module.cloudwan.core_network_arn
+  depends_on = [module.cloudwan]
 }
 
 resource "aws_route" "us_spoke_to_shared" {
@@ -81,18 +84,21 @@ resource "aws_route" "us_spoke_to_shared" {
   route_table_id         = module.spoke_vpc_us.route_table_id
   destination_cidr_block = module.shared_vpc.aws_vpc_cidr
   core_network_arn       = module.cloudwan.core_network_arn
+  depends_on = [module.cloudwan]
 }
 
 resource "aws_route" "shared_to_spoke_eu" {
   route_table_id         = module.shared_vpc.route_table_id
   destination_cidr_block = module.spoke_vpc_eu.aws_vpc_cidr
   core_network_arn       = module.cloudwan.core_network_arn
+  depends_on = [module.cloudwan]
 }
 
 resource "aws_route" "shared_to_spoke_us" {
   route_table_id         = module.shared_vpc.route_table_id
   destination_cidr_block = module.spoke_vpc_us.aws_vpc_cidr
   core_network_arn       = module.cloudwan.core_network_arn
+  depends_on = [module.cloudwan]
 }
 
 
