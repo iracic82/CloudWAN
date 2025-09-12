@@ -1,4 +1,3 @@
-# modules/cloudwan/main.tf
 ##############################################################################
 # Account ID for ARNs
 ##############################################################################
@@ -28,9 +27,6 @@ resource "aws_networkmanager_core_network" "core" {
 
 ##############################################################################
 # Attach the full policy (correct JSON schema)
-# - hyphenated keys
-# - action "share" with "share-with"
-# - asn-ranges must be string ranges, not plain integers
 ##############################################################################
 resource "aws_networkmanager_core_network_policy_attachment" "policy" {
   core_network_id = aws_networkmanager_core_network.core.id
@@ -48,7 +44,7 @@ resource "aws_networkmanager_core_network_policy_attachment" "policy" {
           "location": "eu-central-1",
           "asn": 64514,
           "inside-cidr-blocks": [
-           "10.30.1.0/24", "10.60.1.0/24"
+            "10.30.1.0/24", "10.60.1.0/24"
           ]
         },
         { location = "us-east-1" }
@@ -69,19 +65,19 @@ resource "aws_networkmanager_core_network_policy_attachment" "policy" {
       }
     ]
     "segment-actions": [
-  {
-    "action": "share",
-    "mode": "attachment-route",
-    "segment": "vpcComm",
-    "share-with": ["dnsShared"]
-  },
-  {
-    "action": "share",
-    "mode": "attachment-route",
-    "segment": "dnsShared",
-    "share-with": ["vpcComm"]
-  }
-]
+      {
+        "action": "share",
+        "mode": "attachment-route",
+        "segment": "vpcComm",
+        "share-with": ["dnsShared"]
+      },
+      {
+        "action": "share",
+        "mode": "attachment-route",
+        "segment": "dnsShared",
+        "share-with": ["vpcComm"]
+      }
+    ]
     "attachment-policies" = [
       {
         "rule-number" = 100
@@ -130,11 +126,12 @@ resource "aws_networkmanager_core_network_policy_attachment" "policy" {
     ]
   })
 }
+
 ##############################################################################
 # VPC attachments (wait for policy so the change set is LIVE)
 ##############################################################################
 resource "aws_networkmanager_vpc_attachment" "shared" {
-  depends_on     = [aws_networkmanager_core_network_policy_attachment.policy]
+  depends_on      = [aws_networkmanager_core_network_policy_attachment.policy]
   core_network_id = aws_networkmanager_core_network.core.id
   vpc_arn         = "arn:aws:ec2:eu-central-1:${data.aws_caller_identity.me.account_id}:vpc/${var.vpcs["shared"]}"
   subnet_arns     = var.subnet_arns_map["shared"]
@@ -158,14 +155,17 @@ resource "aws_networkmanager_vpc_attachment" "us" {
   tags            = var.tags
 }
 
+##############################################################################
+# Connect attachment + peers for NIOS-X
+##############################################################################
 resource "aws_networkmanager_connect_attachment" "shared_connect" {
   core_network_id         = aws_networkmanager_core_network.core.id
   transport_attachment_id = aws_networkmanager_vpc_attachment.shared.id
 
   edge_location = "eu-central-1"
   options {
-  protocol = "NO_ENCAP"
-}
+    protocol = "NO_ENCAP"
+  }
 
   tags = merge(var.tags, {
     Name = "shared-vpc-connect"
@@ -176,16 +176,14 @@ resource "aws_networkmanager_connect_peer" "shared_peer" {
   connect_attachment_id = aws_networkmanager_connect_attachment.shared_connect.id
 
   bgp_options {
-    peer_asn = 65001  # ASN of your EC2 (NIOS GM)
+    peer_asn = 65001  # ASN for first NIOS-X
   }
 
-  peer_address = "10.30.1.100"
-  # AWS will infer the /29 from this subnet ARN:
+  peer_address = "10.30.1.5"   # gm_lan1 private IP
   subnet_arn   = var.subnet_arns_map["shared"][0]
- # pick your Shared VPC’s public subnet ARN
 
   tags = merge(var.tags, {
-    Name = "shared-vpc-peer"
+    Name = "shared-vpc-peer-1"
   })
 }
 
@@ -193,10 +191,10 @@ resource "aws_networkmanager_connect_peer" "shared_peer_2" {
   connect_attachment_id = aws_networkmanager_connect_attachment.shared_connect.id
 
   bgp_options {
-    peer_asn = 65002
+    peer_asn = 65002  # ASN for second NIOS-X
   }
 
-  peer_address = "10.30.1.130"
+  peer_address = "10.30.1.6"   # niosx2_lan1 private IP
   subnet_arn   = var.subnet_arns_map["shared"][0]
 
   tags = merge(var.tags, {
