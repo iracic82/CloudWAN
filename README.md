@@ -149,4 +149,4 @@ You can deploy it with:
 ## 👨‍💻 Author
 
 **Igor Racic**  
-Principal Technical Marketing Engineer — Multicloud Networking, DNS, and Infrastructure Automation.  
+Technology Evangelist – AI-Driven Cloud Networking & Security 
