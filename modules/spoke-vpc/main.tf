@@ -11,6 +11,7 @@ data "aws_ami" "linux" {
   }
 }
 
+
 # Create the spoke VPC
 resource "aws_vpc" "spoke" {
   cidr_block           = var.aws_vpc_cidr
@@ -23,7 +24,7 @@ resource "aws_vpc" "spoke" {
 resource "aws_subnet" "subnet" {
   vpc_id                  = aws_vpc.spoke.id
   cidr_block              = var.aws_subnet_cidr
-  availability_zone       = var.az
+  availability_zone       = data.aws_availability_zones.available.names[0]
   map_public_ip_on_launch = true
   tags                    = merge(var.tags, { Name = "${var.vpc_name}-subnet" })
 }
