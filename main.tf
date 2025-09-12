@@ -2,7 +2,7 @@
 module "shared_vpc" {
   providers = { aws = aws }
   source              = "./modules/shared-vpc"
-  infoblox_join_token = "0c40ebc559a4436410c8d00964991f5f5f94b69313ba3285d0234c0e4579f7c5"
+  infoblox_join_token = ""
   key_name       = var.demo_key_name
   tags                = var.tags
 }
