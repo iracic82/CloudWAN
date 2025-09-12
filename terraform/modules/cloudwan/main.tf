@@ -4,7 +4,7 @@
 data "aws_caller_identity" "me" {}
 
 ##############################################################################
-# Global Network
+# Global Network (parent container for Cloud WAN)
 ##############################################################################
 resource "aws_networkmanager_global_network" "global" {
   description = "Infoblox Cloud WAN Global"
@@ -12,13 +12,13 @@ resource "aws_networkmanager_global_network" "global" {
 }
 
 ##############################################################################
-# Core Network + seed a LIVE base policy in both regions
+# Core Network
 ##############################################################################
 resource "aws_networkmanager_core_network" "core" {
   global_network_id   = aws_networkmanager_global_network.global.id
   description         = "Core network with dns-shared & vpc-comm"
 
-  # seeds an initial LIVE policy so attachments won't fail with "live policy not found"
+  # seeds an initial LIVE policy so attachments won't fail
   create_base_policy  = true
   base_policy_regions = ["eu-central-1", "us-east-1"]
 
@@ -26,7 +26,7 @@ resource "aws_networkmanager_core_network" "core" {
 }
 
 ##############################################################################
-# Attach the full policy (correct JSON schema)
+# Core Network Policy
 ##############################################################################
 resource "aws_networkmanager_core_network_policy_attachment" "policy" {
   core_network_id = aws_networkmanager_core_network.core.id
@@ -37,47 +37,57 @@ resource "aws_networkmanager_core_network_policy_attachment" "policy" {
       "vpn-ecmp-support"                   = false
       "dns-support"                        = true
       "security-group-referencing-support" = false
+
+      "inside-cidr-blocks" = [
+        "10.30.0.0/16", # Shared VPC
+        "10.10.0.0/16", # Spoke EU
+        "10.20.0.0/16"  # Spoke US
+      ]
+
       "asn-ranges" = ["64512-65534"]
-      "inside-cidr-blocks": ["10.30.1.0/24", "10.60.0.0/16"]
+
       "edge-locations" = [
         {
-          "location": "eu-central-1",
-          "asn": 64514,
-          "inside-cidr-blocks": [
-            "10.30.1.0/24", "10.60.1.0/24"
-          ]
+          "location"             = "eu-central-1"
+          "asn"                  = 64513
+          "inside-cidr-blocks"   = ["10.30.0.0/16", "10.10.0.0/16"]
         },
-        { location = "us-east-1" }
+        {
+          "location"             = "us-east-1"
+          "asn"                  = 64512
+          "inside-cidr-blocks"   = ["10.20.0.0/16"]
+        }
       ]
     }
+
     segments = [
       {
-        name                            = "dnsShared"
-        description                     = "Shared DNS / NIOS-X"
-        "isolate-attachments"           = false
+        name        = "dnsShared"
+        description = "Shared DNS / NIOS-X"
         "require-attachment-acceptance" = false
       },
       {
-        name                            = "vpcComm"
-        description                     = "Spoke VPCs"
-        "isolate-attachments"           = false
+        name        = "vpcComm"
+        description = "Spoke VPCs"
         "require-attachment-acceptance" = false
       }
     ]
-    "segment-actions": [
+
+    "segment-actions" = [
       {
-        "action": "share",
-        "mode": "attachment-route",
-        "segment": "vpcComm",
-        "share-with": ["dnsShared"]
+        "action"     = "share"
+        "mode"       = "attachment-route"
+        "segment"    = "vpcComm"
+        "share-with" = ["dnsShared"]
       },
       {
-        "action": "share",
-        "mode": "attachment-route",
-        "segment": "dnsShared",
-        "share-with": ["vpcComm"]
+        "action"     = "share"
+        "mode"       = "attachment-route"
+        "segment"    = "dnsShared"
+        "share-with" = ["vpcComm"]
       }
     ]
+
     "attachment-policies" = [
       {
         "rule-number" = 100
@@ -114,7 +124,7 @@ resource "aws_networkmanager_core_network_policy_attachment" "policy" {
       },
       {
         "rule-number" = 400
-        description   = "Map US spoke to vpcComm"
+        description   = "Map Connect peers (NIOS-X) to dnsShared"
         conditions    = [
           { type = "attachment-type", operator = "equals", value = "connect" }
         ]
@@ -128,7 +138,7 @@ resource "aws_networkmanager_core_network_policy_attachment" "policy" {
 }
 
 ##############################################################################
-# VPC attachments (wait for policy so the change set is LIVE)
+# VPC Attachments
 ##############################################################################
 resource "aws_networkmanager_vpc_attachment" "shared" {
   depends_on      = [aws_networkmanager_core_network_policy_attachment.policy]
@@ -156,48 +166,40 @@ resource "aws_networkmanager_vpc_attachment" "us" {
 }
 
 ##############################################################################
-# Connect attachment + peers for NIOS-X
+# Connect Attachment + Peers
 ##############################################################################
 resource "aws_networkmanager_connect_attachment" "shared_connect" {
   core_network_id         = aws_networkmanager_core_network.core.id
   transport_attachment_id = aws_networkmanager_vpc_attachment.shared.id
+  edge_location           = "eu-central-1"
 
-  edge_location = "eu-central-1"
   options {
     protocol = "NO_ENCAP"
   }
 
-  tags = merge(var.tags, {
-    Name = "shared-vpc-connect"
-  })
+  tags = merge(var.tags, { Name = "shared-vpc-connect" })
 }
 
-resource "aws_networkmanager_connect_peer" "shared_peer" {
+resource "aws_networkmanager_connect_peer" "shared_peer_1" {
   connect_attachment_id = aws_networkmanager_connect_attachment.shared_connect.id
 
   bgp_options {
-    peer_asn = 65001  # ASN for first NIOS-X
+    peer_asn = 65001
   }
 
-  peer_address = "10.30.1.5"   # gm_lan1 private IP
+  peer_address = "10.30.1.5" # First NIOS-X
   subnet_arn   = var.subnet_arns_map["shared"][0]
-
-  tags = merge(var.tags, {
-    Name = "shared-vpc-peer-1"
-  })
+  tags         = merge(var.tags, { Name = "shared-vpc-peer-1" })
 }
 
 resource "aws_networkmanager_connect_peer" "shared_peer_2" {
   connect_attachment_id = aws_networkmanager_connect_attachment.shared_connect.id
 
   bgp_options {
-    peer_asn = 65002  # ASN for second NIOS-X
+    peer_asn = 65002
   }
 
-  peer_address = "10.30.1.6"   # niosx2_lan1 private IP
+  peer_address = "10.30.1.6" # Second NIOS-X
   subnet_arn   = var.subnet_arns_map["shared"][0]
-
-  tags = merge(var.tags, {
-    Name = "shared-vpc-peer-2"
-  })
+  tags         = merge(var.tags, { Name = "shared-vpc-peer-2" })
 }
