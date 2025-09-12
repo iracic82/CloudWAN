@@ -112,6 +112,55 @@ resource "local_sensitive_file" "gm_private_key_pem" {
   file_permission = "0400"
 }
 
+# NIC for NIOS-X2
+resource "aws_network_interface" "niosx2_lan1" {
+  subnet_id       = aws_subnet.public.id
+  private_ips     = ["10.30.1.6"]   # pick unused IP
+  security_groups = [aws_security_group.rdp_sg.id]
+
+  tags = merge(var.tags, { Name = "niosx2-lan1-nic" })
+}
+
+# EC2 for NIOS-X2
+resource "aws_instance" "niosx2" {
+  ami           = local.infoblox_ami_id
+  instance_type = "c5a.2xlarge"
+  key_name      = aws_key_pair.gm_key_pair.key_name
+
+  network_interface {
+    network_interface_id = aws_network_interface.niosx2_lan1.id
+    device_index         = 0
+  }
+
+  user_data = <<-EOF
+    #cloud-config
+    host_setup:
+      jointoken: "${local.join_token}"
+  EOF
+
+  metadata_options {
+    http_tokens                 = "optional"
+    http_put_response_hop_limit = 1
+    http_endpoint               = "enabled"
+    instance_metadata_tags      = "enabled"
+  }
+
+  tags = merge(var.tags, { Name = "Infoblox-NIOSX2" })
+
+  depends_on = [aws_internet_gateway.gw]
+}
+
+resource "aws_eip" "niosx2_eip" {
+  domain = "vpc"
+  tags   = merge(var.tags, { Name = "niosx2-eip" })
+}
+
+resource "aws_eip_association" "niosx2_eip_assoc" {
+  network_interface_id = aws_network_interface.niosx2_lan1.id
+  allocation_id        = aws_eip.niosx2_eip.id
+  private_ip_address   = "10.30.1.6"
+}
+
 # Grid Master EC2 (NIOS-X)
 resource "aws_instance" "gm" {
   ami                    =  local.infoblox_ami_id
