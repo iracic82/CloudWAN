@@ -16,7 +16,7 @@ module "spoke_vpc_eu" {
   vpc_name       = "spoke-vpc-eu"
   aws_vpc_cidr   = "10.10.0.0/16"
   aws_subnet_cidr= "10.10.1.0/24"
-  az             = "eu-west-1a"
+  az             = "eu-central-1a"
   private_ip     = "10.10.1.10"
   instance_name  = "spoke-ec2-eu"
   key_name       = var.demo_key_name
