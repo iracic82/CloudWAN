@@ -20,3 +20,7 @@ output "ssh_access_us" {
   value       = module.spoke_vpc_us.ssh_access
 }
 
+output "bgp_peering_details" {
+  description = "All BGP peering details for NIOS-X to AWS"
+  value       = module.cloudwan.connect_peer_bgp
+}
