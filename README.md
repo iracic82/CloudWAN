@@ -44,7 +44,7 @@ It is designed to demonstrate how to interconnect multiple VPCs (shared services
 │   ├── providers.tf     # AWS provider definitions & aliases
 │   ├── variables.tf     # Input variables
 │   ├── outputs.tf       # Exported values (VPC IDs, SSH commands, etc.)
-│   ├── terraform.tfvars # Input varibales values
+│   ├── terraform.tfvars # Input varibale values
 ├── modules/             # Terraform modules
 │   ├── shared-vpc/      # Shared services VPC + Infoblox NIOS-X GM
 │   ├── spoke-vpc/       # EU & US spoke VPCs
