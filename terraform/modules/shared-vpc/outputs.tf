@@ -14,6 +14,9 @@ output "route_table_id" {
 output "aws_vpc_cidr" {
   value = aws_vpc.shared.cidr_block
 }
+output "vpc_cidr" {
+  value = var.vpc_cidr
+}
 
 output "gm_private_ip" {
   value = aws_network_interface.gm_lan1.private_ip
