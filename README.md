@@ -2,6 +2,8 @@
 
 This repository contains Infrastructure-as-Code (IaC) to **deploy a complete AWS Cloud WAN lab environment**.  
 It is designed to demonstrate how to interconnect multiple VPCs (shared services and spoke VPCs) across AWS regions using **AWS Cloud WAN**, with route control, BGP peering, and Infoblox NIOS-X integration in the Shared VPC acting as DNS.  
+
+
 This is a scalable lab framework, and the Terraform module structure can be applied to your own CI/CD pipeline.
 
 ---
