@@ -1,3 +1,4 @@
+
 # Inputs: map of VPC IDs and map of lists of subnet ARNs
 variable "vpcs" {
   type = map(string)
