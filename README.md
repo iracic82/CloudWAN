@@ -39,16 +39,16 @@ It is designed to demonstrate how to interconnect multiple VPCs (shared services
 
 ```
 .
-├── terraform/          # Core Terraform configs
-│   ├── main.tf         # Root Terraform entrypoint
-│   ├── providers.tf    # AWS provider definitions & aliases
-│   ├── variables.tf    # Input variables (CIDRs, tokens, tags, etc.)
-│   ├── outputs.tf      # Exported values (VPC IDs, SSH commands, etc.)
-│
-├── modules/            # Terraform modules
-│   ├── shared-vpc/     # Shared services VPC + Infoblox NIOS-X GM
-│   ├── spoke-vpc/      # EU & US spoke VPCs
-│   └── cloudwan/       # Cloud WAN core + policy + attachments
+├── terraform/           # Core Terraform configs
+│   ├── main.tf          # Root Terraform entrypoint
+│   ├── providers.tf     # AWS provider definitions & aliases
+│   ├── variables.tf     # Input variables
+│   ├── outputs.tf       # Exported values (VPC IDs, SSH commands, etc.)
+│   ├── terraform.tfvars # Input varibales values
+├── modules/             # Terraform modules
+│   ├── shared-vpc/      # Shared services VPC + Infoblox NIOS-X GM
+│   ├── spoke-vpc/       # EU & US spoke VPCs
+│   └── cloudwan/        # Cloud WAN core + policy + attachments
 │
 └── scripts/            # Helper scripts (e.g., Infoblox automation)
 ```
