@@ -203,5 +203,3 @@ resource "aws_networkmanager_connect_peer" "shared_peer_2" {
   subnet_arn   = var.subnet_arns_map["shared"][0]
   tags         = merge(var.tags, { Name = "shared-vpc-peer-2" })
 }
-
-
