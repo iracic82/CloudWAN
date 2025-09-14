@@ -88,7 +88,8 @@ resource "aws_route" "eu_routes" {
     eu_to_us            = { rt = module.spoke_vpc_eu.route_table_id, dest = module.spoke_vpc_us.vpc_cidr }
     eu_to_shared        = { rt = module.spoke_vpc_eu.route_table_id, dest = module.shared_vpc.vpc_cidr }
     shared_to_spoke_eu  = { rt = module.shared_vpc.route_table_id,   dest = module.spoke_vpc_eu.vpc_cidr }
-    shared_to_spoke_us  = { rt = module.shared_vpc.route_table_id,   dest = module.spoke_vpc_us.vpc_cidr } # 👈 move here
+    shared_to_spoke_us  = { rt = module.shared_vpc.route_table_id,   dest = module.spoke_vpc_us.vpc_cidr }
+    shared_to_connect   = { rt = module.shared_vpc.route_table_id,   dest = "10.60.0.0/16" }
   }
 
   depends_on             = [time_sleep.wait_for_core_network]
