@@ -39,9 +39,9 @@ resource "aws_networkmanager_core_network_policy_attachment" "policy" {
       "security-group-referencing-support" = false
 
       "inside-cidr-blocks" = [
-        "10.30.0.0/16", # Shared VPC
-        "10.10.0.0/16", # Spoke EU
-        "10.20.0.0/16"  # Spoke US
+        "10.30.1.0/24", # Shared VPC
+        "10.10.1.0/24", # Spoke EU
+        "10.20.1.0/24"  # Spoke US
       ]
 
       "asn-ranges" = ["64512-65534"]
@@ -50,12 +50,12 @@ resource "aws_networkmanager_core_network_policy_attachment" "policy" {
         {
           "location"             = "eu-central-1"
           "asn"                  = 64513
-          "inside-cidr-blocks"   = ["10.30.0.0/16", "10.10.0.0/16"]
+          "inside-cidr-blocks"   = ["10.30.1.0/24", "10.10.1.0/24"]
         },
         {
           "location"             = "us-east-1"
           "asn"                  = 64512
-          "inside-cidr-blocks"   = ["10.20.0.0/16"]
+          "inside-cidr-blocks"   = ["10.20.1.0/24"]
         }
       ]
     }
