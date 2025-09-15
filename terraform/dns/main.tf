@@ -1,55 +1,41 @@
-terraform {
-  required_providers {
-    bloxone = {
-      source  = "infobloxopen/bloxone"
-      version = ">= 1.5.0"
-    }
-    aws = {
-      source  = "hashicorp/aws"
-      version = ">= 5.0"
-    }
-  }
-}
-
-provider "aws" {
-  region = var.aws_region
-}
-
-provider "bloxone" {
-  csp_url = "https://csp.infoblox.com"
-  api_key = var.ddi_api_key
-
-  default_tags = {
-    managed_by = "terraform"
-    site       = "Site A"
-  }
-}
-
 # -----------------------------
-# Variables
+# Look up Default DNS View
 # -----------------------------
-variable "ddi_api_key" {}
-variable "aws_region" {
-  default = "eu-west-2"
-}
-variable "availability_zone" {
-  default = "eu-west-2a"
-}
-variable "project_name" {
-  default = "infoblox-aws-integration"
-}
-
-# -----------------------------
-# Lookup Realm and Federated Block
-# -----------------------------
-data "bloxone_federation_federated_realms" "acme" {
+data "bloxone_dns_views" "default_view" {
   filters = {
-    name = "ACME Corporation"
+    name = "default"
   }
 }
 
-data "bloxone_federation_federated_blocks" "aws_block" {
+# -----------------------------
+# Look up Existing Zone
+# -----------------------------
+data "bloxone_dns_auth_zones" "infolab_zone" {
   filters = {
-    name = "AWS"
+    fqdn = var.zone_fqdn
+    view = data.bloxone_dns_views.default_view.results[0].id
   }
+}
+
+# -----------------------------
+# Create A Records
+# -----------------------------
+resource "bloxone_dns_a_record" "app1" {
+  rdata = {
+    address = var.app1_ip
+  }
+  zone          = data.bloxone_dns_auth_zones.infolab_zone.results[0].id
+  name_in_zone  = "app1"
+  ttl           = 300
+  comment       = "App1 test record"
+}
+
+resource "bloxone_dns_a_record" "app2" {
+  rdata = {
+    address = var.app2_ip
+  }
+  zone          = data.bloxone_dns_auth_zones.infolab_zone.results[0].id
+  name_in_zone  = "app2"
+  ttl           = 300
+  comment       = "App2 test record"
 }
