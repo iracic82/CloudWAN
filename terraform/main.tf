@@ -90,6 +90,7 @@ resource "aws_route" "eu_routes" {
     shared_to_spoke_eu  = { rt = module.shared_vpc.route_table_id,   dest = module.spoke_vpc_eu.vpc_cidr }
     shared_to_spoke_us  = { rt = module.shared_vpc.route_table_id,   dest = module.spoke_vpc_us.vpc_cidr }
     shared_to_connect   = { rt = module.shared_vpc.route_table_id,   dest = "10.60.0.0/16" }
+    shared_to_anycast   = { rt = module.shared_vpc.route_table_id,   dest = "192.168.100.10/32" }  
   }
 
   depends_on             = [time_sleep.wait_for_core_network]
@@ -107,6 +108,7 @@ resource "aws_route" "us_routes" {
   for_each = {
     us_to_eu      = { rt = module.spoke_vpc_us.route_table_id, dest = module.spoke_vpc_eu.vpc_cidr }
     us_to_shared  = { rt = module.spoke_vpc_us.route_table_id, dest = module.shared_vpc.vpc_cidr }
+    us_to_anycast = { rt = module.spoke_vpc_us.route_table_id, dest = "192.168.100.10/32" }
   }
 
   depends_on             = [time_sleep.wait_for_core_network]
