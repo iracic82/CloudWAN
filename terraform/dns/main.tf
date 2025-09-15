@@ -27,7 +27,7 @@ resource "bloxone_dns_a_record" "app1" {
   zone          = data.bloxone_dns_auth_zones.infolab_zone.results[0].id
   name_in_zone  = "app1"
   ttl           = 300
-  comment       = "App1 test record"
+  comment       = "App1 Prod record"
 }
 
 resource "bloxone_dns_a_record" "app2" {
@@ -37,5 +37,5 @@ resource "bloxone_dns_a_record" "app2" {
   zone          = data.bloxone_dns_auth_zones.infolab_zone.results[0].id
   name_in_zone  = "app2"
   ttl           = 300
-  comment       = "App2 test record"
+  comment       = "App2 Prod record"
 }
