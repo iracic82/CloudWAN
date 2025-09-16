@@ -120,6 +120,7 @@ resource "aws_network_interface" "gm_lan1" {
   subnet_id       = aws_subnet.public.id
   private_ips     = [var.gm_ip]
   security_groups = [aws_security_group.srv.id]
+  source_dest_check = false
   tags            = merge(var.tags, { Name = "gm-lan1-nic" })
 }
 
@@ -127,6 +128,7 @@ resource "aws_network_interface" "niosx2_lan1" {
   subnet_id       = aws_subnet.public.id
   private_ips     = [var.nios_ip]
   security_groups = [aws_security_group.srv.id]
+  source_dest_check = false
   tags            = merge(var.tags, { Name = "niosx2-lan1-nic" })
 }
 
