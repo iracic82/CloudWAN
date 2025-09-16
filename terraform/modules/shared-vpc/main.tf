@@ -136,7 +136,8 @@ resource "aws_network_interface" "niosx2_lan1" {
 resource "aws_instance" "gm" {
   ami           = var.infoblox_ami_id
   instance_type = "c5a.2xlarge"
-  key_name      = aws_key_pair.gm_key_pair.key_name  # ✅ use generated key
+  key_name      = aws_key_pair.gm_key_pair.key_name
+  source_dest_check = false
 
   primary_network_interface {
     network_interface_id = aws_network_interface.gm_lan1.id
@@ -162,7 +163,8 @@ resource "aws_instance" "gm" {
 resource "aws_instance" "niosx2" {
   ami           = var.infoblox_ami_id
   instance_type = "c5a.2xlarge"
-  key_name      = aws_key_pair.gm_key_pair.key_name  # ✅ use generated key
+  key_name      = aws_key_pair.gm_key_pair.key_name
+  source_dest_check = false
 
   primary_network_interface {
     network_interface_id = aws_network_interface.niosx2_lan1.id
